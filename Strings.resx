@@ -183,4 +183,13 @@
   <data name="Setting_Orientation" xml:space="preserve">
     <value>Manual Orientation</value>
   </data>
+  <data name="Delay_BeforeMount" xml:space="preserve">
+    <value>Add delay before radial menu</value>
+  </data>
+  <data name="Delay_Time" xml:space="preserve">
+    <value>Delay time (in seconds)</value>
+  </data>
+  <data name="Delay_Action" xml:space="preserve">
+    <value>Action to take if radial key is released before delay ends</value>
+  </data>
 </root>

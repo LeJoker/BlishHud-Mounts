@@ -257,5 +257,32 @@ namespace Manlaan.Mounts {
                 return ResourceManager.GetString("Setting_Orientation", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Delay.
+        /// </summary>
+        internal static string Delay_BeforeMount {
+            get {
+                return ResourceManager.GetString("Delay_BeforeMount", resourceCulture);
+            }
+        }        
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delay Time.
+        /// </summary>
+        internal static string Delay_Time {
+            get {
+                return ResourceManager.GetString("Delay_Time", resourceCulture);
+            }
+        }        
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delay Action.
+        /// </summary>
+        internal static string Delay_Action {
+            get {
+                return ResourceManager.GetString("Delay_Action", resourceCulture);
+            }
+        }
     }
 }

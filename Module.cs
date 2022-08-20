@@ -40,6 +40,7 @@ namespace Manlaan.Mounts
         public static string[] _mountBehaviour = new string[] { "DefaultMount", "Radial" };
         public static string[] _mountOrientation = new string[] { "Horizontal", "Vertical" };
         public static string[] _mountRadialCenterMountBehavior = new string[] { "None", "Default", "LastUsed" };
+        public static string[] _delayAction = new string[] { "None", "Default", "LastUsed" };
 
         public static SettingEntry<string> _settingDefaultMountChoice;
         public static SettingEntry<string> _settingDefaultWaterMountChoice;
@@ -63,6 +64,10 @@ namespace Manlaan.Mounts
         public static SettingEntry<bool> _settingDrag;
         public static SettingEntry<int> _settingImgWidth;
         public static SettingEntry<float> _settingOpacity;
+
+        public static SettingEntry<bool> _settingDelayBeforeMount;
+        public static SettingEntry<int> _settingDelayTime;
+        public static SettingEntry<string> _settingDelayAction;
 
 #pragma warning disable CS0618 // Type or member is obsolete
         private WindowTab windowTab;
@@ -165,6 +170,11 @@ namespace Manlaan.Mounts
             _settingOpacity = settings.DefineSetting("MountOpacity", 1.0f, () => Strings.Setting_MountOpacity, () => "");
             _settingOpacity.SetRange(0f, 1f);
 
+            _settingDelayBeforeMount = settings.DefineSetting("DelayBeforeMount", false, () => Strings.Delay_BeforeMount, () => "");
+            _settingDelayTime = settings.DefineSetting("DelayTime", 250, () => Strings.Delay_Time, () => "");
+            _settingDelayTime.SetRange(0, 3000);
+            _settingDelayAction = settings.DefineSetting("DelayAction", "Default", () => Strings.Delay_Action, () => "");
+
             MigrateDisplaySettings();
 
             foreach (Mount m in _mounts)
@@ -191,6 +201,10 @@ namespace Manlaan.Mounts
             _settingDrag.SettingChanged += UpdateSettings;
             _settingImgWidth.SettingChanged += UpdateSettings;
             _settingOpacity.SettingChanged += UpdateSettings;
+
+            _settingDelayBeforeMount.SettingChanged += UpdateSettings;
+            _settingDelayTime.SettingChanged += UpdateSettings;
+            _settingDelayAction.SettingChanged += UpdateSettings;
 
         }
 
@@ -273,6 +287,10 @@ namespace Manlaan.Mounts
             _settingDrag.SettingChanged -= UpdateSettings;
             _settingImgWidth.SettingChanged -= UpdateSettings;
             _settingOpacity.SettingChanged -= UpdateSettings;
+
+            _settingDelayBeforeMount.SettingChanged -= UpdateSettings;
+            _settingDelayTime.SettingChanged -= UpdateSettings;
+            _settingDelayAction.SettingChanged -= UpdateSettings;
             
             GameService.Overlay.BlishHudWindow.RemoveTab(windowTab);
         }
@@ -388,6 +406,21 @@ namespace Manlaan.Mounts
             _radial.Parent = GameService.Graphics.SpriteScreen;
         }
 
+        private Task<bool> DelayIfNeeded()
+        {
+            if (_settingDelayBeforeMount.Value)
+            {
+                while (_settingDefaultMountBinding.Value.IsTriggering)
+                {
+                    System.Threading.Thread.Sleep(_settingDelayTime.Value);
+                    return Task.FromResult(true);
+                }
+                //Pretty sure right here should go the "if you let go early" shit
+                return Task.FromResult(false);
+            }
+            return Task.FromResult(true);
+        }
+
         private async Task DoDefaultMountActionAsync()
         {
             if (_helper.IsKeybindBeingTriggered())
@@ -426,9 +459,16 @@ namespace Manlaan.Mounts
                     Logger.Debug("DoDefaultMountActionAsync DefaultMountBehaviour defaultmount");
                     break;
                 case "Radial":
-                    _radial.Show();
-                    Logger.Debug("DoDefaultMountActionAsync DefaultMountBehaviour radial");
-                    break;
+                    if(await DelayIfNeeded())
+                    {
+                        _radial.Show();
+                        Logger.Debug("DoDefaultMountActionAsync DefaultMountBehaviour radial");
+                        break;
+                    }
+                    else
+                    {
+                        break;
+                    }
             }
             return;
         }

@@ -30,6 +30,7 @@ namespace Manlaan.Mounts.Views
             int orderWidth                = 80;
             int bindingWidth              = 170;
             int mountsAndRadialInputWidth = 125;
+            int delayWidth                = 140;
 
             Panel mountsLeftPanel = new Panel() {
                 CanScroll = false,
@@ -52,6 +53,14 @@ namespace Manlaan.Mounts.Views
                 Width = 330,
                 Location = new Point(mountsLeftPanel.Right + 20, 93),
             };
+            Panel delayPanel = new Panel()
+            {
+                CanScroll = false,
+                Parent = buildPanel,
+                HeightSizingMode = SizingMode.AutoSize,
+                Width = 420,
+                Location = new Point(mountsLeftPanel.Right + 20, 260), 
+            };
             Panel defaultMountPanel = new Panel()
             {
                 CanScroll = false,
@@ -70,6 +79,7 @@ namespace Manlaan.Mounts.Views
             };
 
             DisplayManualPanelIfNeeded(manualPanel);
+            DisplayDelayPanelIfNeeded(delayPanel);
 
             #region Mounts Panel
             var anetImage = new Image
@@ -224,6 +234,28 @@ namespace Manlaan.Mounts.Views
                 Module._settingDisplayManualIcons.Value = settingDisplayManualIcons_Checkbox.Checked;
                 DisplayManualPanelIfNeeded(manualPanel);
             };
+
+            Label settingDelayBeforeMount_Label = new Label()
+            {
+                Location = new Point(0, settingDisplayManualIcons_Label.Bottom + 150),
+                Width = 175,
+                AutoSizeHeight = false,
+                WrapText = false,
+                Parent = otherPanel,
+                Text = "Delay Before Radial Appears: ",
+            };
+            Checkbox settingDelayBeforeMount_Checkbox = new Checkbox()
+            {
+                Size = new Point(bindingWidth, 20),
+                Parent = otherPanel,
+                Checked = Module._settingDelayBeforeMount.Value,
+                Location = new Point(settingDelayBeforeMount_Label.Right + 5, settingDelayBeforeMount_Label.Top - 1),
+            };
+            settingDelayBeforeMount_Checkbox.CheckedChanged += delegate
+            {
+                Module._settingDelayBeforeMount.Value = settingDelayBeforeMount_Checkbox.Checked;
+                DisplayDelayPanelIfNeeded(delayPanel);
+            };
             #endregion
 
             #region manual Panel
@@ -301,6 +333,63 @@ namespace Manlaan.Mounts.Views
                 Parent = manualPanel
             };
             settingClockDrag_Container.Show(settingClockDrag_View);
+            #endregion
+
+            #region delay Panel
+            Label settingDelay_Label = new Label()
+            {
+                Location = new Point(0, 2),
+                Width = delayPanel.Width,
+                AutoSizeHeight = false,
+                WrapText = false,
+                Parent = delayPanel,
+                Text = "Delay Settings",
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            Label settingDelayTime_Label = new Label()
+            {
+                Location = new Point(0, settingDelay_Label.Bottom + 6),
+                Width = delayWidth,
+                AutoSizeHeight = false,
+                WrapText = false,
+                Parent = delayPanel,
+                Text = "Delay Length: ",
+            };
+            TrackBar settingDelayTime_Slider = new TrackBar()
+            {
+                Location = new Point(settingDelayTime_Label.Right + 5, settingDelayTime_Label.Top),
+                Width = 180,
+                MaxValue = 3000,
+                MinValue = 0,
+                Value = Module._settingDelayTime.Value,
+                Parent = delayPanel,
+            };
+            settingDelayTime_Slider.ValueChanged += delegate { Module._settingDelayTime.Value = (int)settingDelayTime_Slider.Value; };
+
+            Label settingDelayAction_Label = new Label()
+            {
+                Location = new Point(0, settingDelayTime_Label.Bottom + 6),
+                Width = delayWidth,
+                AutoSizeHeight = false,
+                WrapText = false,
+                Parent = delayPanel,
+                Text = "Early Release Mount: ",
+            };
+            Dropdown settingDelayAction_Select = new Dropdown()
+            {
+                Location = new Point(settingDelayAction_Label.Right + 5, settingDelayAction_Label.Top - 4),
+                Width = 100,
+                Parent = delayPanel,
+            };
+            foreach (string s in Module._delayAction)
+            {
+                settingDelayAction_Select.Items.Add(s);
+            }
+            settingDelayAction_Select.SelectedItem = Module._settingDelayAction.Value;
+            settingDelayAction_Select.ValueChanged += delegate {
+                Module._settingDelayAction.Value = settingDelayAction_Select.SelectedItem;
+            };
             #endregion
 
             BuildDefaultMountPanel(defaultMountPanel, labelWidth2, mountsAndRadialInputWidth);
@@ -609,6 +698,14 @@ namespace Manlaan.Mounts.Views
                 manualPanel.Show();
             else
                 manualPanel.Hide();
+        }
+
+        private static void DisplayDelayPanelIfNeeded(Panel delayPanel)
+        {
+            if (Module._settingDelayBeforeMount.Value)
+                delayPanel.Show();
+            else
+                delayPanel.Hide();
         }
     }
 }
